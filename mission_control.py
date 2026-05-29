@@ -1,10 +1,12 @@
 dados_missao =[
-[24, 92, 88, 96, 90],
-[27, 80, 72, 94, 85],
-[31, 65, 58, 91, 70],
-[36, 42, 38, 87, 55],
-[39, 28, 19, 78, 35],
-[34, 55, 32, 82, 50]]
+[40, 25, 15, 75, 35],
+[42, 22, 12, 73, 30],
+[41, 20, 10, 71, 28],
+[43, 18, 8, 70, 25],
+[44, 15, 6, 68, 22],
+[45, 12, 5, 65, 20]
+]
+
 
 areas_monitoradas = [
     "Temperatura interna",
@@ -94,59 +96,64 @@ def calcular_pontuacao(classificacao):
         return 0
 
 def classificar_ciclo(pontuacao):
-    if  pontuacao < 2:
+    if  pontuacao <= 2:
         return "MISSÃO ESTÁVEL"
-    elif 3 <= pontuacao <= 5:
+    elif pontuacao <= 5:
         return "MISSÃO EM ATENÇÃO"
     else:
         return "MISSÃO CRÍTICA"
 
-def gerar_recomendacao(class_temp, class_com, class_bat, class_oxi, class_est):
-    classificacoes = [class_temp, class_com, class_bat, class_oxi, class_est]
+def identificar_area_mais_afetada(pontuacoes):
+    maior_pont  = 0
+    indice_area = 0
 
-    todos_criticos = True
-    todos_atencao = True
+    for j in range(len(pontuacoes)):
+        if pontuacoes[j] > maior_pont:
+            maior_pont  = pontuacoes[j]
+            indice_area = j
 
-    for j in range(len(classificacoes)):
-        if classificacoes[j] != "CRÍTICO":
-            todos_criticos = False
-        if classificacoes[j] != "ATENÇÃO":
-            todos_atencao = False
+    return areas_monitoradas[indice_area]
 
-    if todos_criticos:
+def gerar_recomendacao(class_temperatura, class_comunicacao, class_bateria, class_oxigenio, class_estabilidade):
+
+    if class_temperatura == "CRÍTICO" and class_comunicacao == "CRÍTICO" and class_bateria == "CRÍTICO" and class_oxigenio == "CRÍTICO" and class_estabilidade == "CRÍTICO":
         return "Ativar modo de segurança e priorizar suporte à vida, energia e comunicação."
 
-    if todos_atencao:
+    if class_temperatura == "ATENÇÃO" and class_comunicacao == "ATENÇÃO" and class_bateria == "ATENÇÃO" and class_oxigenio == "ATENÇÃO" and class_estabilidade == "ATENÇÃO":
         return "Monitorar sistemas em atenção e preparar plano de contingência."
 
-    msgs_critico = [
-        "Verificar controle térmico da missão.",
-        "Restabelecer contato com a base.",
-        "Ativar modo de economia de energia.",
-        "Acionar protocolo de suporte à vida.",
-        "Reduzir operações não essenciais."
-    ]
+    if class_temperatura == "CRÍTICO":
+        return "Verificar controle térmico da missão."
+    if class_comunicacao == "CRÍTICO":
+        return "Restabelecer contato com a base."
+    if class_bateria == "CRÍTICO":
+        return "Ativar modo de economia de energia."
+    if class_oxigenio == "CRÍTICO":
+        return "Acionar protocolo de suporte à vida."
+    if class_estabilidade == "CRÍTICO":
+        return "Reduzir operações não essenciais."
 
-    msgs_atencao = [
-        "Monitorar temperatura.",
-        "Monitorar comunicação.",
-        "Monitorar nível de bateria.",
-        "Monitorar nível de oxigênio.",
-        "Monitorar estabilidade operacional."
-    ]
+    if class_temperatura == "ATENÇÃO":
+        return "Monitorar temperatura."
+    if class_comunicacao == "ATENÇÃO":
+        return "Monitorar comunicação."
+    if class_bateria == "ATENÇÃO":
+        return "Monitorar nível de bateria."
+    if class_oxigenio == "ATENÇÃO":
+        return "Monitorar nível de oxigênio."
+    if class_estabilidade == "ATENÇÃO":
+        return "Monitorar estabilidade operacional."
 
-    recomendacao = ""
+    return "Manter operação normal e continuar monitoramento."
 
-    for j in range(len(classificacoes)):
-        if classificacoes[j] == "CRÍTICO":
-            recomendacao += msgs_critico[j] + " "
-        elif classificacoes[j] == "ATENÇÃO":
-            recomendacao += msgs_atencao[j] + " "
+def classificar_missao(risco_medio):
+    if risco_medio <= 2:
+        return "MISSÃO ESTÁVEL"
+    elif risco_medio <= 5:
+        return "MISSÃO EM ATENÇÃO"
+    else:
+        return "MISSÃO CRÍTICA"
 
-    if recomendacao == "":
-        recomendacao = "Manter operação normal e continuar monitoramento."
-
-    return recomendacao
 
 def analisar_tendencia(riscos):
 
@@ -162,11 +169,11 @@ def analisar_tendencia(riscos):
     else:
         return "A missão permaneceu estável."
 
-print(f"============================================================")
-print(f"✧ MISSION CONTROL AI ✧")
-print(f"============================================================")
+print("============================================================")
+print("✧ MISSION CONTROL AI ✧")
+print("============================================================")
 print(f"Missão: Operação Amaris Lumina")
-print(f"Equipe: Equipe Amaris")
+print(f"Equipe: Equipe Amaris II")
 print(f"Quantidade de ciclos analisados: {len(dados_missao)}")
 print()
 
@@ -186,7 +193,7 @@ for i in range(len(dados_missao)):
 
     ciclo_pont = (calcular_pontuacao(class_temperatura) + calcular_pontuacao(class_comunicacao) + calcular_pontuacao(class_bateria) + calcular_pontuacao(class_oxigenio) + calcular_pontuacao(class_estabilidade))
     ciclo_class = classificar_ciclo(ciclo_pont)
-    recomendacoes = gerar_recomendacao(class_temperatura, class_comunicacao, class_bateria, class_oxigenio, class_estabilidade)
+    ciclo_rec = gerar_recomendacao(class_temperatura, class_comunicacao, class_bateria, class_oxigenio, class_estabilidade)
 
     total_temperatura += temperatura
     total_comunicacao += comunicacao
@@ -200,31 +207,46 @@ for i in range(len(dados_missao)):
     pontuacoes_area[3] += calcular_pontuacao(class_oxigenio)
     pontuacoes_area[4] += calcular_pontuacao(class_estabilidade)
 
-    print(f"------------------------------------------------------------")
+    print("------------------------------------------------------------")
     print(f"CICLO {i + 1}")
-    print(f"------------------------------------------------------------")
-    print(f"Temperatura: {ciclo[0]} °C | Classificação: {class_temperatura} | {msg_temperatura} ")
-    print(f"Comunicação: {ciclo[1]}% | Classificação: {class_comunicacao} | {msg_comunicacao}")
-    print(f"Bateria: {ciclo[2]}% | Classificação: {class_bateria} | {msg_bateria}")
-    print(f"Oxigênio: {ciclo[3]}% | Classificação: {class_oxigenio} | {msg_oxigenio}")
-    print(f"Estabilidade: {ciclo[4]}% | Classificação: {class_estabilidade} | {msg_estabilidade}")
+    print("------------------------------------------------------------")
+    print(f"Temperatura: {temperatura} °C | Classificação: {class_temperatura} | {msg_temperatura} ")
+    print(f"Comunicação: {comunicacao}% | Classificação: {class_comunicacao} | {msg_comunicacao}")
+    print(f"Bateria: {bateria}% | Classificação: {class_bateria} | {msg_bateria}")
+    print(f"Oxigênio: {oxigenio}% | Classificação: {class_oxigenio} | {msg_oxigenio}")
+    print(f"Estabilidade: {estabilidade}% | Classificação: {class_estabilidade} | {msg_estabilidade}")
     print(f"Pontuação de risco do ciclo: {ciclo_pont}")
     print(f"Classificação do ciclo: {ciclo_class}")
-    print(f"Recomendação: {recomendacoes}")
+    print(f"Recomendação: {ciclo_rec}")
 
 n = len(dados_missao)
 
 media_temp = total_temperatura / n
-media_com  = total_comunicacao / n
-media_bat  = total_bateria     / n
-media_oxi  = total_oxigenio    / n
-media_est  = total_estabilidade / n
+media_com = total_comunicacao / n
+media_bat = total_bateria / n
+media_oxi = total_oxigenio / n
+media_est = total_estabilidade / n
 risco_medio = sum(riscos) / n
 tendencia = analisar_tendencia(riscos)
+maior_risco = 0
+ciclo_critico = 0
+qtd_criticos = 0
+class_missao = (classificar_missao(risco_medio))
+maior_area = identificar_area_mais_afetada(pontuacoes_area)
 
-print(f"------------------------------------------------------------")
-print(f"RELATÓRIO FINAL DA MISSÃO")
-print(f"============================================================")
+for j in range(len(riscos)):
+    if riscos[j] > maior_risco:
+        maior_risco = riscos[j]
+        ciclo_critico = j + 1
+    if riscos[j] >= 6:
+        qtd_criticos += 1
+
+
+
+
+print("------------------------------------------------------------")
+print("RELATÓRIO FINAL DA MISSÃO")
+print("============================================================")
 print()
 print(f"Quantidade de ciclos analisados: {len(dados_missao)}")
 print()
@@ -234,27 +256,26 @@ print(f"Média de bateria: {media_bat:.2f}%")
 print(f"Média de oxigênio: {media_oxi:.2f}%")
 print(f"Média de estabilidade: {media_est:.2f}%")
 print()
-print(f"Ciclo mais crítico:")
-print(f"Maior pontuação de risco:")
-print(f"Maior pontuação de risco:")
+print(f"Ciclo mais crítico: {ciclo_critico}")
+print(f"Maior pontuação de risco: {maior_risco}")
 print(f"Risco médio da missão: {risco_medio:.2f}")
-print(f"Quantidade de ciclos críticos:")
+print(f"Quantidade de ciclos críticos: {qtd_criticos}")
 print()
 print(f"Tendência da missão:")
 print(tendencia)
 print()
 print(f"Pontuação acumulada por área: ")
-print(f"Temperatura interna: ")
-print(f"Comunicação com a base: ")
-print(f"Sistema de energia: ")
-print(f"Suporte de oxigênio: ")
-print(f"Estabilidade operacional: ")
+print(f"Temperatura interna: {pontuacoes_area[0]}")
+print(f"Comunicação com a base: {pontuacoes_area[1]}")
+print(f"Sistema de energia: {pontuacoes_area[2]}")
+print(f"Suporte de oxigênio: {pontuacoes_area[3]}")
+print(f"Estabilidade operacional: {pontuacoes_area[4]}")
 print()
 print(f"Área mais afetada:")
-print()
+print(maior_area)
 print()
 print(f"Classificação final da missão:")
-print()
+print(class_missao)
 print()
 print(f"Conclusão:")
 print()
